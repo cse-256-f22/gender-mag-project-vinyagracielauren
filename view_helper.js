@@ -639,11 +639,11 @@ function define_new_file_select_field(id_prefix, select_button_text, on_user_cha
 // Get a (very simple) text representation of a permissions explanation
 function get_explanation_text(explanation) {
     return `
-    Action allowed?: ${explanation.is_allowed}; 
-    Because of
-    permission set for file: ${explanation.file_responsible?get_full_path(explanation.file_responsible):'N/A'}
-    and for user: ${ explanation.ace_responsible ? get_user_name(explanation.ace_responsible.who) : 'N/A' }
-    ${ explanation.text_explanation ? `(${explanation.text_explanation})`  : '' }
+    <p>Action allowed?: <b>${explanation.is_allowed}</b></br> 
+    Due to
+    permission set for file: <b>${explanation.file_responsible?get_full_path(explanation.file_responsible):'N/A'}</b>
+    and for user: <b>${ explanation.ace_responsible ? get_user_name(explanation.ace_responsible.who) : 'N/A' }</b></br>
+    <b><i>${ explanation.text_explanation ? `(${explanation.text_explanation})`  : '' }</i></b></p>
     `
 }
 
@@ -653,7 +653,15 @@ $('#filestructure').css({
     'width':'49%',
     'vertical-align': 'top'
 })
-$('#filestructure').after('<div id="sidepanel" style="display:inline-block;width:49%"></div>')
+$('#filestructure').after('<div id="sidepanel" style="position:relative;display:inline-block;width:49%"></div>')
 
 //ADDED IN LOWER PANEL
-$('#filestructure').after('<div id="lowerpanel" style="position:absolute;width:49%"></div>')
+$('#filestructure').after('<div id="lowerpanel" ></div>')
+
+$('#lowerpanel').css({
+    'position':'absolute',
+    'width':'90%',
+    'margin':'5px',
+    'padding':'10px',
+    // 'border-style' : 'solid'
+})

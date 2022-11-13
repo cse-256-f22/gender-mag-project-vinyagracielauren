@@ -21,6 +21,7 @@
 
 #mturk-top-banner-drop-down-content {
     position: absolute;
+    /* display: block; */
     width: 99%;
     bottom: 0px;
     top:unset;

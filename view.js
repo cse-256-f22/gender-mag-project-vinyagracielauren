@@ -1,8 +1,14 @@
 // ---- Define your dialogs  and panels here ----
+
+//DISPLAY TEXT
+task = 
+task = `<h4>TASK TO COMPLETE: </h4>${$('#scenario_context').html()}`
+$('#lowerpanel').append(task);
+
+//CREATE THE INFO PANEL 
 var info_panel = define_new_effective_permissions('effective_permissions', true);
 $('#sidepanel').append(info_panel);
 
-//When user changes, the effective_permissions panel's username 
 var user_dialog = define_new_user_select_field('user_select', 'Choose User', function(selected_user){
     $('#effective_permissions').attr('username', selected_user);
 });
@@ -14,7 +20,41 @@ var file_dialog = define_new_file_select_field('file_select', 'Choose File', fun
 $('#sidepanel').append(user_dialog);
 $('#sidepanel').append(file_dialog);
 
-// $('#sidepanel').append(file_dialog);
+let new_dialog = define_new_dialog('new-dialog', title='', options = {});
+
+$('.fa-info-circle').click(function(){
+
+    filepath = $('#effective_permissions').attr('filepath');
+    username = $('#effective_permissions').attr('username');
+    permission = $(this).attr('permission_name');
+
+    console.log("PERMISSION: " + permission);
+
+    console.log("FILEPATH: " + filepath);
+    console.log("USER: " + username);
+
+    my_file_obj_var = path_to_file[filepath];
+    my_user_obj_var = all_users[username];
+
+    if(filepath == undefined || username == undefined){
+        explanation = '<p><b>';
+        if(filepath == undefined){
+            explanation += 'Please choose a file.</br>'
+        }
+        if(username == undefined){
+            explanation += 'Please choose a user.'
+        }
+        explanation += '</b></p>'
+        new_dialog.html(explanation);
+    }
+    else {
+        new_dialog.html(get_explanation_text(allow_user_action(my_file_obj_var, my_user_obj_var, permission, explain_why = true)));
+    }
+
+    new_dialog.dialog('open');
+
+});
+
 
 // ---- Display file structure ----
 
