@@ -47,6 +47,49 @@ function make_user_elem(id_prefix, uname, user_attributes=null) {
     return user_elem
 }
 
+function make_file_elem(id_prefix, fattr, fname) {
+    file_elem = $(`<div class="ui-widget-content" id="${id_prefix}_${fname}" name="${fname}">
+        <span id="${id_prefix}_${uname}_icon"}"/> 
+        <span id="${id_prefix}_${fname}_text">${fattr.filename}</span>
+    </div>`)
+
+    return file_elem
+}
+
+console.log(parent_to_children)
+
+function make_folder_elem(folder, fname) {
+    children = '<p><b>Affected folders: </b>'
+    length = parent_to_children[fname].length
+    entered = false
+
+    for(var i = 0; i < length; i++){
+        element = parent_to_children[fname][i]
+        if(element.is_folder){
+            entered = true
+            if (i == length - 1) {
+                children += element.filename + "</p>"
+            }
+            else {
+                children += element.filename + ", "
+            }
+        } 
+    }
+
+    if(entered == false){
+        children += "N/A </p>"
+    }
+
+    folder_elem = `<br/><div class = "unclickable"><h4 class = "unclickable">${fname}</h4></div>`
+    if(folder.parent == null){
+        folder_elem = `<div class = "unclickable"><h3 class = "unclickable">Top Directory: ${fname}</h3></div>`
+    }
+
+    folder_elem += children
+
+    final_elem = $(`${folder_elem}`)
+    return final_elem
+}
 
 // make a list of users, suitable for inserting into a select list, given a map of user name to some arbitrary info.
 // optionally, adds all the properties listed for a given user as attributes for that user's element.
@@ -59,7 +102,23 @@ function make_user_list(id_prefix, usermap, add_attributes = false) {
     }
     return u_elements
 }
+function make_file_list(id_prefix, filemap) {
+    let f_elements = []
+    
 
+    for (const [fname, fattr] of Object.entries(filemap)) {
+        if(!fattr.is_folder){
+            file_elem = make_file_elem(id_prefix, fattr, fname)
+            f_elements.push(file_elem)
+        }
+        else {
+            folder_elem  = make_folder_elem(fattr, fname);
+            f_elements.push(folder_elem)
+        }
+    }
+
+    return f_elements
+}
 
 // --- helper functions to define various semi-permanent elements.
 // --- Only call these once for each new dialog/selection/item etc. you are defining! (NOT each time you want to open/close/hide a dialog)
@@ -84,6 +143,7 @@ function define_new_dialog(id_prefix, title='', options = {}){
         autoOpen: false,
         modal: true,
         position: { my: "top", at: "top", of: $('#html-loc') },
+        width:"50%"
     }
     
     // add default options - do not override ones that are already specified.
@@ -109,7 +169,10 @@ function define_new_dialog(id_prefix, title='', options = {}){
 function define_single_select_list(id_prefix, on_selection_change = function(selected_item_name, e, ui){}) {
     let select_list = $(`<div id="${id_prefix}" style="overflow-y:scroll"></div>`).selectable({
         selected: function(e, ui) { 
-
+            $( ".unclickable" ).selectable({
+                disabled: true
+            });
+              
             // Unselect any previously selected (normally, selectable allows multiple selections)
             $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected");
             
@@ -499,6 +562,78 @@ function define_new_user_select_field(id_prefix, select_button_text, on_user_cha
     return sel_section
 }
 
+// -- a general-purpose FILE Select dialog which can be opened when we need to select a user. -- 
+
+// Make a selectable list which will store all of the users, and automatically keep track of which one is selected.
+all_file_selectlist = define_single_select_list('file_select_list')
+
+// Make the elements which reperesent all users, and add them to the selectable
+all_file_elements = make_file_list('file_select', path_to_file)
+all_file_selectlist.append(all_file_elements)
+
+// Make the dialog:
+file_select_dialog = define_new_dialog('file_select_dialog', 'Select File', {
+    buttons: {
+        Cancel: {
+            text: "Cancel",
+            id: "file_select_cancel_button",
+            click: function() {
+                $( this ).dialog( "close" );
+            },
+        },
+        OK: {
+            text: "OK",
+            id: "file_select_ok_button",
+            click: function() {
+                // When "OK" is clicked, we want to populate some other element with the selected user name 
+                //(to pass along the selection information to whoever opened this dialog)
+                let to_populate_id = $(this).attr('to_populate') // which field do we need to populate?
+                let selected_value = all_file_selectlist.attr('selected_item') // what is the user name that was selected?
+                $(`#${to_populate_id}`).attr('selected_file', selected_value) // populate the element with the id
+                $( this ).dialog( "close" );
+            }
+        }
+    }
+})
+
+// add stuff to the dialog:
+file_select_dialog.append(all_file_selectlist)
+
+// Call this function whenever you need a user select dialog; it will automatically populate the 'selected_user' attribute of the element with id to_populate_id
+function open_file_select_dialog(to_populate_id) {
+    // TODO: reset selected user?..
+    file_select_dialog.attr('to_populate', to_populate_id)
+    file_select_dialog.dialog('open')
+}
+
+// define a new user-select field which opens up a user-select dialog and stores the result in its own selected_user attribute.
+// The resulting jquery element contains a field and a button. The field's text also gets populated with the selected user.
+// - id_prefix is the required id prefix that will be attached to all element ids.
+// - select_button_text is the text that will go on the button
+// - on_user_change is an additional function you can pass in, which will be called each time a user is selected.
+function define_new_file_select_field(id_prefix, select_button_text, on_user_change = function(selected_user){}){
+    // Make the element:
+    let sel_section = $(`<div id="${id_prefix}_line" class="section">
+            <span id="${id_prefix}_field" class="ui-widget-content" style="width: 80%;display: inline-block;">&nbsp</span>
+            <button id="${id_prefix}_button" class="ui-button ui-widget ui-corner-all">${select_button_text}</button>
+        </div>`)
+
+    // Open user select on button click:
+    sel_section.find(`#${id_prefix}_button`).click(function(){
+        open_file_select_dialog(`${id_prefix}_field`)
+    })
+
+    // Set up an observer to watch the attribute change and change the field
+    let field_selector = sel_section.find(`#${id_prefix}_field`)
+    define_attribute_observer(field_selector, 'selected_file', function(new_file){
+        field_selector.text(new_file)
+        // call the function for additional processing of user change:
+        on_user_change(new_file)
+    })
+
+    return sel_section
+}
+
 //---- misc. ----
 
 // Get a (very simple) text representation of a permissions explanation
@@ -519,3 +654,6 @@ $('#filestructure').css({
     'vertical-align': 'top'
 })
 $('#filestructure').after('<div id="sidepanel" style="display:inline-block;width:49%"></div>')
+
+//ADDED IN LOWER PANEL
+$('#filestructure').after('<div id="lowerpanel" style="position:absolute;width:49%"></div>')

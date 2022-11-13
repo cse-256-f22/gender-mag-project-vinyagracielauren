@@ -1,6 +1,20 @@
 // ---- Define your dialogs  and panels here ----
+var info_panel = define_new_effective_permissions('effective_permissions', true);
+$('#sidepanel').append(info_panel);
 
+//When user changes, the effective_permissions panel's username 
+var user_dialog = define_new_user_select_field('user_select', 'Choose User', function(selected_user){
+    $('#effective_permissions').attr('username', selected_user);
+});
 
+var file_dialog = define_new_file_select_field('file_select', 'Choose File', function(selected_file){
+    $('#effective_permissions').attr('filepath', selected_file);
+});
+
+$('#sidepanel').append(user_dialog);
+$('#sidepanel').append(file_dialog);
+
+// $('#sidepanel').append(file_dialog);
 
 // ---- Display file structure ----
 
