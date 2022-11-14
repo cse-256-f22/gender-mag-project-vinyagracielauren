@@ -674,41 +674,9 @@ function generate_lower_panel(){
     //     structure += children
     // }
 
-    return task + tips
-}
+    button = `<button onClick="window.location.reload();" class = ui-button ui-widget ui-corner-all">Reset Changes</button>`
 
-
-function make_folder_elem(folder, fname) {
-    children = '<p><b>Affected folders: </b>'
-    length = parent_to_children[fname].length
-    entered = false
-
-    for(var i = 0; i < length; i++){
-        element = parent_to_children[fname][i]
-        if(element.is_folder){
-            entered = true
-            if (i == length - 1) {
-                children += element.filename + "</p>"
-            }
-            else {
-                children += element.filename + ", "
-            }
-        } 
-    }
-
-    if(entered == false){
-        children += "N/A </p>"
-    }
-
-    folder_elem = `<br/><div class = "unclickable"><h4 class = "unclickable">${fname}</h4></div>`
-    if(folder.parent == null){
-        folder_elem = `<div class = "unclickable"><h3 class = "unclickable">Top Directory: ${fname}</h3></div>`
-    }
-
-    folder_elem += children
-
-    final_elem = $(`${folder_elem}`)
-    return final_elem
+    return task + tips + button
 }
 
 //---- some universal HTML set-up so you don't have to do it in each wrapper.html ----
@@ -717,6 +685,7 @@ $('#filestructure').css({
     'width':'49%',
     'vertical-align': 'top'
 })
+
 $('#filestructure').after('<div id="sidepanel" style="position:relative;display:inline-block;width:49%"></div>')
 
 //ADDED IN LOWER PANEL
