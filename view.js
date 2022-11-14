@@ -1,9 +1,8 @@
 // ---- Define your dialogs  and panels here ----
 
 //DISPLAY TEXT
-task = 
-task = `<h4>TASK TO COMPLETE: </h4>${$('#scenario_context').html()}`
-$('#lowerpanel').append(task);
+lower = generate_lower_panel;
+$('#lowerpanel').append(generate_lower_panel);
 
 //CREATE THE INFO PANEL 
 var info_panel = define_new_effective_permissions('effective_permissions', true);
@@ -13,7 +12,7 @@ var user_dialog = define_new_user_select_field('user_select', 'Choose User', fun
     $('#effective_permissions').attr('username', selected_user);
 });
 
-var file_dialog = define_new_file_select_field('file_select', 'Choose File', function(selected_file){
+var file_dialog = define_new_file_select_field('file_select', 'Choose Folder/File', function(selected_file){
     $('#effective_permissions').attr('filepath', selected_file);
 });
 
@@ -36,7 +35,10 @@ $('.fa-info-circle').click(function(){
     my_file_obj_var = path_to_file[filepath];
     my_user_obj_var = all_users[username];
 
+    // get_permission_text(permission);
+
     if(filepath == undefined || username == undefined){
+        full_text = get_permissions_text(permission)
         explanation = '<p><b>';
         if(filepath == undefined){
             explanation += 'Please choose a file.</br>'
@@ -45,10 +47,12 @@ $('.fa-info-circle').click(function(){
             explanation += 'Please choose a user.'
         }
         explanation += '</b></p>'
-        new_dialog.html(explanation);
+        new_dialog.html(full_text + explanation);
     }
     else {
-        new_dialog.html(get_explanation_text(allow_user_action(my_file_obj_var, my_user_obj_var, permission, explain_why = true)));
+        full_text = get_permissions_text(permission)
+        explanation = get_explanation_text(allow_user_action(my_file_obj_var, my_user_obj_var, permission, explain_why = true))
+        new_dialog.html(full_text + explanation);
     }
 
     new_dialog.dialog('open');
