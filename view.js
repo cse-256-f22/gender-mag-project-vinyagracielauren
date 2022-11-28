@@ -1,63 +1,39 @@
 // ---- Define your dialogs  and panels here ----
 
-//DISPLAY TEXT
-lower = generate_lower_panel;
-$('#lowerpanel').append(generate_lower_panel);
+// --- INSTRUCTIONS ----
+guidance_panel = define_user_guidance();
+$('#sidepanel').append(guidance_panel);
 
-//CREATE THE INFO PANEL 
-var info_panel = define_new_effective_permissions('effective_permissions', true);
-$('#sidepanel').append(info_panel);
+handle = setInterval(function(){
+    logs = parse_logs()
 
-var user_dialog = define_new_user_select_field('user_select', 'Choose User', function(selected_user){
-    $('#effective_permissions').attr('username', selected_user);
-});
+    document.getElementById("hints").innerHTML=logs[0];
 
-var file_dialog = define_new_file_select_field('file_select', 'Choose Folder/File', function(selected_file){
-    $('#effective_permissions').attr('filepath', selected_file);
-});
-
-$('#sidepanel').append(user_dialog);
-$('#sidepanel').append(file_dialog);
-
-let new_dialog = define_new_dialog('new-dialog', title='', options = {});
-
-$('.fa-info-circle').click(function(){
-
-    filepath = $('#effective_permissions').attr('filepath');
-    username = $('#effective_permissions').attr('username');
-    permission = $(this).attr('permission_name');
-
-    console.log("PERMISSION: " + permission);
-
-    console.log("FILEPATH: " + filepath);
-    console.log("USER: " + username);
-
-    my_file_obj_var = path_to_file[filepath];
-    my_user_obj_var = all_users[username];
-
-    // get_permission_text(permission);
-
-    if(filepath == undefined || username == undefined){
-        full_text = get_permissions_text(permission)
-        explanation = '<p><b>';
-        if(filepath == undefined){
-            explanation += 'Please choose a file.</br>'
-        }
-        if(username == undefined){
-            explanation += 'Please choose a user.'
-        }
-        explanation += '</b></p>'
-        new_dialog.html(full_text + explanation);
-    }
-    else {
-        full_text = get_permissions_text(permission)
-        explanation = get_explanation_text(allow_user_action(my_file_obj_var, my_user_obj_var, permission, explain_why = true))
-        new_dialog.html(full_text + explanation);
+    if(logs[1]){
+        clearInterval(handle)
     }
 
-    new_dialog.dialog('open');
+    
+        },1000);
 
-});
+const modal = document.querySelector(".modal");
+const trigger = document.querySelector(".trigger");
+const closeButton = document.querySelector(".close-button");
+
+function toggleModal() {
+    modal.classList.toggle("show-modal");
+}
+
+function windowOnClick(event) {
+    if (event.target === modal) {
+        toggleModal();
+    }
+}
+
+trigger.addEventListener("click", toggleModal);
+closeButton.addEventListener("click", toggleModal);
+window.addEventListener("click", windowOnClick);
+
 
 
 // ---- Display file structure ----
@@ -71,7 +47,7 @@ function make_file_element(file_obj) {
             <h3 id="${file_hash}_header">
                 <span class="oi oi-folder" id="${file_hash}_icon"/> ${file_obj.filename} 
                 <button class="ui-button ui-widget ui-corner-all permbutton" path="${file_hash}" id="${file_hash}_permbutton"> 
-                    <span class="oi oi-lock-unlocked" id="${file_hash}_permicon"/> 
+                    Permission <span class="oi oi-lock-unlocked" id="${file_hash}_permicon"/> 
                 </button>
             </h3>
         </div>`)
@@ -91,7 +67,7 @@ function make_file_element(file_obj) {
         return $(`<div class='file'  id="${file_hash}_div">
             <span class="oi oi-file" id="${file_hash}_icon"/> ${file_obj.filename}
             <button class="ui-button ui-widget ui-corner-all permbutton" path="${file_hash}" id="${file_hash}_permbutton"> 
-                <span class="oi oi-lock-unlocked" id="${file_hash}_permicon"/> 
+                Permission <span class="oi oi-lock-unlocked" id="${file_hash}_permicon"/> 
             </button>
         </div>`)
     }

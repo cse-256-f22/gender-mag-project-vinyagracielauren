@@ -22,7 +22,6 @@
 
 </head>
 
-    
 <body>
     <div id="inner-body">
 
@@ -74,15 +73,46 @@
                     <span id="mturk-top-banner-inner-span">
                         <span class="mturk-top-banner-button mturk-top-banner-back-wh footer"
                             id="mturk-top-banner-arrow">
-                            <i class="fa fa-chevron-up" id="mturk-top-banner-drop-down-button" style="display: none;">
+                            <i class="fa fa-chevron-up" id="mturk-top-banner-drop-down-button">
                             </i>
-                            <i class="fa fa-chevron-down" id="mturk-top-banner-collapse-button">
+                            <i class="fa fa-chevron-down" id="mturk-top-banner-collapse-button" style="display: none;">
                             </i>
                         </span>
                     </span>
                 </span>
             </span>
         </div>
+
+        <div id = "instructions">
+            <h2>Instructions</h2>
+            <p>
+                Below you will see a simplified file system management interface and a task.
+                Pretend that you are an administrator for this file system. Your responsibility is to maintain correct file permissions for a given task.
+                <button class = "trigger">How do file permissions work?</button>
+
+                <div class="modal">
+                    <div class="modal-content">
+                        <span class="close-button">&times;</span>
+                        <h3>Inheritance</h3>
+                            <p>
+                                Parent folders have child folders underneath them. <code>Changing the permissions of a parent folder changes the same permissions for its child folders and files.</code>
+                            </p>
+                        </br>
+
+                        <h3>Precedence</h3>
+                            <p>
+                                <code>Closer permissions take precedence over ones that are further away.</code> Ex: Direct allow takes precedence over inherited deny. <code>Deny permissions also take precendence over allow permissions.</code> 
+                            </p>
+                    </div>
+                </div>
+
+            </p></br>
+
+            <h3 >Here is your task:</h3>
+            <p id = "task"></p>
+           
+        </div>
+
         <div id="wrapper">
             <div data-app="gender-mag" data-mode="tracker" id="html-loc" data-tag="">
                 <!-- div where file and folder structure will be generated:-->

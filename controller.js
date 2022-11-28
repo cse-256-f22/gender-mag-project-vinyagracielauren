@@ -75,7 +75,6 @@ permission_groups = {
 perm_groupnames = Object.keys(permission_groups);
 perm_groupnames.push('Special_permissions');
 
-
 // Extra permission groups (this way Read, Write, Delete, Other make up the whole set; and are disjoint)
 // TODO/commit when??: WRITE_DATA should actually be in Write, also. [not in Other]
 
@@ -405,6 +404,9 @@ function validate_and_get_logs() {
         }
     }
 
+    allowed_but_should_be_denied = []
+    denied_but_should_be_allowed = []
+
     console.log(missing_allowed, should_not_be_allowed);
     if (missing_allowed.length > 0 || should_not_be_allowed.length > 0) {
         console.error(
@@ -419,6 +421,9 @@ function validate_and_get_logs() {
                 let filepath = id_to_filepath[parseInt(ids[0])];
                 let username = id_to_username[parseInt(ids[1])];
                 let perm = id_to_permission[parseInt(ids[2])];
+
+                allowed_but_should_be_denied.push(`<p><i>${username}</i> : ${perm}, ${filepath}</p>`)
+
                 console.log('\t', username, ': ', perm, filepath);
             }
         }
@@ -431,6 +436,9 @@ function validate_and_get_logs() {
                 let filepath = id_to_filepath[parseInt(ids[0])];
                 let username = id_to_username[parseInt(ids[1])];
                 let perm = id_to_permission[parseInt(ids[2])];
+
+                denied_but_should_be_allowed.push(`<p><i>${username}</i> : ${perm}, ${filepath}</p>`)
+
                 console.log('\t', username, ': ', perm, filepath);
             }
         }
@@ -441,4 +449,38 @@ function validate_and_get_logs() {
     } else {
         console.log(JSON.stringify(userData));
     }
+
+    return [allowed_but_should_be_denied, denied_but_should_be_allowed]
 }
+
+function parse_logs(){
+    logs = validate_and_get_logs()
+    allowed = logs[0]
+    denied = logs[1]
+
+    success = false;
+    explanation = ``
+    if(allowed.length === 0 & denied.length === 0){
+        explanation += `<p><b>Your solution is correct!</b></p>`
+        success = true;
+    }
+    else {
+        explanation += `<p><b>Your current solution is incorrect. See below:</b></p>`
+        if(allowed.length > 0){
+            explanation += `<p>The following permissions are currently allowed, but should be denied:</p>`
+            for(const element of allowed){
+                explanation += element
+            }
+        }
+        if(denied.length > 0){
+            explanation += `<p>The following permissions are currently denied, but should be allowed:</p>`
+            for(const element of denied){
+                explanation += element
+            }
+        }
+    }
+
+    return [explanation, success]
+}
+
+

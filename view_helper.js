@@ -24,6 +24,7 @@ function define_attribute_observer(watched_elem_selector, watched_attribute, on_
 
 }
 
+
 // --- Helper functions to create transient elements and data structures.
 // --- These elements will be created and destroyed as needed (often when the data being displayed changes).
 
@@ -46,20 +47,6 @@ function make_user_elem(id_prefix, uname, user_attributes=null) {
     return user_elem
 }
 
-function make_file_elem(id_prefix, fattr, fname) {
-    file_elem = $(`<div class="ui-widget-content" id="${id_prefix}_${fname}" name="${fname}">
-        <span id="${id_prefix}_${uname}_icon"}"/> 
-        <span id="${id_prefix}_${fname}_text">${fname}</span>
-    </div>`)
-    if(fattr.is_folder){
-        file_elem = $(`<div class="ui-widget-content" id="${id_prefix}_${fname}" name="${fname}">
-        <span id="${id_prefix}_${uname}_icon"}"/> 
-        <span id="${id_prefix}_${fname}_text"><b>${fname}</b></span>
-    </div>`)
-    }
-    
-    return file_elem
-}
 
 // make a list of users, suitable for inserting into a select list, given a map of user name to some arbitrary info.
 // optionally, adds all the properties listed for a given user as attributes for that user's element.
@@ -73,17 +60,6 @@ function make_user_list(id_prefix, usermap, add_attributes = false) {
     return u_elements
 }
 
-//make a list of files
-function make_file_list(id_prefix, filemap) {
-    let f_elements = []
-    
-    for (const [fname, fattr] of Object.entries(filemap)) {
-        file_elem = make_file_elem(id_prefix, fattr, fname)
-        f_elements.push(file_elem)
-    }
-
-    return f_elements
-}
 
 // --- helper functions to define various semi-permanent elements.
 // --- Only call these once for each new dialog/selection/item etc. you are defining! (NOT each time you want to open/close/hide a dialog)
@@ -107,9 +83,9 @@ function define_new_dialog(id_prefix, title='', options = {}){
         appendTo: "#html-loc",
         autoOpen: false,
         modal: true,
-        position: { my: "top", at: "top", of: $('#html-loc') },
-        width:"50%"
+        position: { my: "center" , of: $('#html-loc')},
     }
+    //, at: "top", of: $('#instructions')
     
     // add default options - do not override ones that are already specified.
     for(let d_o in default_options){
@@ -134,6 +110,7 @@ function define_new_dialog(id_prefix, title='', options = {}){
 function define_single_select_list(id_prefix, on_selection_change = function(selected_item_name, e, ui){}) {
     let select_list = $(`<div id="${id_prefix}" style="overflow-y:scroll"></div>`).selectable({
         selected: function(e, ui) { 
+
             // Unselect any previously selected (normally, selectable allows multiple selections)
             $(ui.selected).addClass("ui-selected").siblings().removeClass("ui-selected");
             
@@ -173,7 +150,6 @@ function define_single_select_list(id_prefix, on_selection_change = function(sel
 function define_new_effective_permissions(id_prefix, add_info_col = false, which_permissions = null){
     // Set up the table:
     let effective_container = $(`<div id="${id_prefix}" class="ui-widget-content" style="overflow-y:scroll"></div>`)
-    effective_container.append($(`<h3>Advanced permissions</h3>`))
     
     // If no subset of permissions is passed in, use all of them.
     if(which_permissions === null) {
@@ -524,159 +500,24 @@ function define_new_user_select_field(id_prefix, select_button_text, on_user_cha
     return sel_section
 }
 
-// -- a general-purpose FILE Select dialog which can be opened when we need to select a user. -- 
-
-// Make a selectable list which will store all of the users, and automatically keep track of which one is selected.
-all_file_selectlist = define_single_select_list('file_select_list')
-
-// Make the elements which reperesent all users, and add them to the selectable
-all_file_elements = make_file_list('file_select', path_to_file)
-all_file_selectlist.append(all_file_elements)
-
-// Make the dialog:
-file_select_dialog = define_new_dialog('file_select_dialog', 'Select File', {
-    buttons: {
-        Cancel: {
-            text: "Cancel",
-            id: "file_select_cancel_button",
-            click: function() {
-                $( this ).dialog( "close" );
-            },
-        },
-        OK: {
-            text: "OK",
-            id: "file_select_ok_button",
-            click: function() {
-                // When "OK" is clicked, we want to populate some other element with the selected user name 
-                //(to pass along the selection information to whoever opened this dialog)
-                let to_populate_id = $(this).attr('to_populate') // which field do we need to populate?
-                let selected_value = all_file_selectlist.attr('selected_item') // what is the user name that was selected?
-                $(`#${to_populate_id}`).attr('selected_file', selected_value) // populate the element with the id
-                $( this ).dialog( "close" );
-            }
-        }
-    }
-})
-
-// add stuff to the dialog:
-file_select_dialog.append(all_file_selectlist)
-
-// Call this function whenever you need a user select dialog; it will automatically populate the 'selected_user' attribute of the element with id to_populate_id
-function open_file_select_dialog(to_populate_id) {
-    // TODO: reset selected user?..
-    file_select_dialog.attr('to_populate', to_populate_id)
-    file_select_dialog.dialog('open')
-}
-
-// define a new user-select field which opens up a user-select dialog and stores the result in its own selected_user attribute.
-// The resulting jquery element contains a field and a button. The field's text also gets populated with the selected user.
-// - id_prefix is the required id prefix that will be attached to all element ids.
-// - select_button_text is the text that will go on the button
-// - on_user_change is an additional function you can pass in, which will be called each time a user is selected.
-function define_new_file_select_field(id_prefix, select_button_text, on_user_change = function(selected_user){}){
-    // Make the element:
-    let sel_section = $(`<div id="${id_prefix}_line" class="section">
-            <span id="${id_prefix}_field" class="ui-widget-content" style="width: 80%;display: inline-block;">&nbsp</span>
-            <button id="${id_prefix}_button" class="ui-button ui-widget ui-corner-all">${select_button_text}</button>
-        </div>`)
-
-    // Open user select on button click:
-    sel_section.find(`#${id_prefix}_button`).click(function(){
-        open_file_select_dialog(`${id_prefix}_field`)
-    })
-
-    // Set up an observer to watch the attribute change and change the field
-    let field_selector = sel_section.find(`#${id_prefix}_field`)
-    define_attribute_observer(field_selector, 'selected_file', function(new_file){
-        field_selector.text(new_file)
-        // call the function for additional processing of user change:
-        on_user_change(new_file)
-    })
-
-    return sel_section
+//---- user guidance ----
+function define_user_guidance(){
+    let guidance_container = $(`<h3 class = "center">Verify your solution: </h3>
+    <div id = "hints"></div>`);
+    return guidance_container
 }
 
 //---- misc. ----
-//get text for permissions
-function get_permissions_text(permission){
-    functions = { 
-        "traverse folder/execute file": `<b>Traverse folder</b> allows or denies selected user to move through folders to reach other files or folders, even if the user has no permissions for the traversed folders <b>(APPLIES TO FOLDERS ONLY)</b>. <b>Execute File</b> allows or denies running program files <b>(APPLIES TO FILES ONLY)</b>.`,
-        "list folder/read contents": `<b>List folder</b> allows or denies selected user from view file names and subfolder names within the folder <b>(APPLIES TO FOLDERS ONLY)</b>. <b>Read Data</b> allows or denies viewing data in files <b>(APPLIES TO FILES ONLY)</b>.`,
-        "read attributes": `Allows or denies selected user from viewing the attributes of a file or folder, such as read-only and hidden.`,
-        "read extended attributes": `Allows or denies selected user from viewing the extended attributes of a file or folder.`,
-        "create files/write data": `<b>Create files</b> allows or denies selected user from creating files within the folder <b>(APPKIES TO FOLDERS ONLY)</b>. <b>Write data</b> allows or denies making changes to the file and overwriting existing content <b>(APPLIES TO FILES ONLY)</b>.`,
-        "create folders/append data": `<b>Create folders</b> allows or denies selected user from creating folders within the folder <b>(APPLIES TO FOLDERS ONLY)</b>.`,
-        "write attributes": `Allows or denies selected user from changing the attributes of a file or folder, such as read-only or hidden.`,
-        "write extended attributes": `Allows or denies selected user from changing the extended attributes of a file or folder.`,
-        "delete subfolders and files": `Allows or denies selected user from deleting subfolders and files, even if the Delete permission has not been granted on the subfolder or file.`,
-        "delete": `Allows or denies selected user from deleting the file or folder. If you do not have Delete permission on a file or folder, you can still delete it if you have been granted Delete Subfolders and Files on the parent folder`,
-        "read permissions": `Allows or denies selected user from reading permissions of the file or folder.`,
-        "change permissions": `Allows or denies selected user from changing permissions of the file or folder.`,
-        "take ownership": `Allows or denies selected user from taking ownership of the file or folder.`
-    }
-
-
-    full_text = `<p>Permission Description:</br> ${functions[permission]}</p></br>`
-
-    return full_text
-    
-}
 
 // Get a (very simple) text representation of a permissions explanation
-function get_explanation_text(explanation, permission) {
+function get_explanation_text(explanation) {
     return `
-    <p>Action allowed?: <b>${explanation.is_allowed}</b></br> 
-    Due to
-    permission set for file: <b>${explanation.file_responsible?get_full_path(explanation.file_responsible):'N/A'}</b>
-    and for user: <b>${ explanation.ace_responsible ? get_user_name(explanation.ace_responsible.who) : 'N/A' }</b></br>
-    <b><i>${ explanation.text_explanation ? `(${explanation.text_explanation})`  : '' }</i></b></p>
+    Action allowed?: ${explanation.is_allowed}; 
+    Because of
+    permission set for file: ${explanation.file_responsible?get_full_path(explanation.file_responsible):'N/A'}
+    and for user: ${ explanation.ace_responsible ? get_user_name(explanation.ace_responsible.who) : 'N/A' }
+    ${ explanation.text_explanation ? `(${explanation.text_explanation})`  : '' }
     `
-}
-
-//GENERATE LOWER PANEL
-function generate_lower_panel(){
-    task = `<h4>TASK TO COMPLETE: </h4><p>${$('#scenario_context').html()}</p></br>`
-    tips = `<p><h4>RULES TO REMEMBER: </h4>
-            <b>Inherited:</b> Changing the permissions of a parent folder changes the same permissions for its child folders and files.</br>
-            <b>Both Deny and Allow Set:</b> Deny takes precedence over allow.</br>
-            <b>Direct:</b> Closer permissions take precedence over ones that are further away. Ex: Direct allow takes precedence over inherited deny.</br>
-        </p></br>`
-    // structure = `<div><h4>FOLDER STRUCTURE</h4><p><i>Note: Parents inherit the child folders of their children. Changes cascade down.</i></p><br>`
-
-    // console.log(parent_to_children)
-
-    // for (const [key, value] of Object.entries(parent_to_children)) {
-    //     structure += `<b>Folder:</b> ${key}`
-
-    //     children = '<p><i>Child folder(s):</i> '
-    //     length = value.length
-    //     entered = false
-    
-    //     for(var i = 0; i < length; i++){
-    //         element = value[i]
-    //         if(element.is_folder){
-    //             entered = true
-    //             if (i == length - 1) {
-    //                 children += element.filename
-    //             }
-    //             else {
-    //                 children += element.filename + ", "
-    //             }
-    //         } 
-    //     }
-    
-    //     if(entered == false){
-    //         children += "N/A"
-    //     }
-
-    //     children += `</div><br>`
-
-    //     structure += children
-    // }
-
-    button = `<button onClick="window.location.reload();" class = ui-button ui-widget ui-corner-all">Reset Changes</button>`
-
-    return task + tips + button
 }
 
 //---- some universal HTML set-up so you don't have to do it in each wrapper.html ----
@@ -685,16 +526,10 @@ $('#filestructure').css({
     'width':'49%',
     'vertical-align': 'top'
 })
+$('#filestructure').after('<div id="sidepanel""></div>')
 
-$('#filestructure').after('<div id="sidepanel" style="position:relative;display:inline-block;width:49%"></div>')
+//style="display:inline-block;width:49%;height:50%;overflow:auto
 
-//ADDED IN LOWER PANEL
-$('#filestructure').after('<div id="lowerpanel" ></div>')
-
-$('#lowerpanel').css({
-    'position':'absolute',
-    'width':'90%',
-    'margin':'5px',
-    'padding':'10px',
-    // 'border-style' : 'solid'
-})
+//---- putting in instructions ----
+$()
+$(`<p>${$('#scenario_context').html()}</p>`).appendTo('#task')
