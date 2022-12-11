@@ -5,7 +5,7 @@
 }
 
 #wrapper {
-    position: relative;
+    position: sticky;
     z-index: 1;
 }
 
