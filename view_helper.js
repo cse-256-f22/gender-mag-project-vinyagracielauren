@@ -276,7 +276,7 @@ function define_grouped_permission_checkboxes(id_prefix, which_groups = null) {
             // can't get permissions for this username/filepath - reset everything into a blank state
             group_table.find('.groupcheckbox').prop('disabled', true)
             group_table.find('.groupcheckbox').prop('checked', false)
-            $(`#${id_prefix}_header_username`).text('[No User Selected]')
+            $(`#${id_prefix}_header_username`).text('[Select User]')
         }
 
     }
