@@ -159,7 +159,7 @@ define_attribute_observer(perm_dialog, 'filepath', function(){
 
     grouped_permissions.attr('filepath', current_filepath) // set filepath for permission checkboxes
     $('#permdialog_objname_namespan').text(current_filepath) // set filepath for Object Name text
-
+ 
     // Generate element with all the file-specific users:
     file_users = get_file_users(path_to_file[current_filepath])
     file_user_list = make_user_list('permdialog_file_user', file_users, add_attributes = true)
