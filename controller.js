@@ -453,34 +453,6 @@ function validate_and_get_logs() {
     return [allowed_but_should_be_denied, denied_but_should_be_allowed]
 }
 
-function parse_logs(){
-    logs = validate_and_get_logs()
-    allowed = logs[0]
-    denied = logs[1]
 
-    success = false;
-    explanation = ``
-    if(allowed.length === 0 & denied.length === 0){
-        explanation += `<p><b>Your solution is correct!</b></p>`
-        success = true;
-    }
-    else {
-        explanation += `<p><b>Your current solution is incorrect. See below:</b></p>`
-        if(allowed.length > 0){
-            explanation += `<p>The following permissions are currently allowed, but should be denied:</p>`
-            for(const element of allowed){
-                explanation += element
-            }
-        }
-        if(denied.length > 0){
-            explanation += `<p>The following permissions are currently denied, but should be allowed:</p>`
-            for(const element of denied){
-                explanation += element
-            }
-        }
-    }
-
-    return [explanation, success]
-}
 
 

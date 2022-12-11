@@ -1,9 +1,6 @@
 // ---- Define your dialogs  and panels here ----
 
 // --- INSTRUCTIONS ----
-guidance_panel = define_user_guidance();
-$('#sidepanel').append(guidance_panel);
-
 handle = setInterval(function(){
     logs = parse_logs()
 

@@ -500,13 +500,6 @@ function define_new_user_select_field(id_prefix, select_button_text, on_user_cha
     return sel_section
 }
 
-//---- user guidance ----
-function define_user_guidance(){
-    let guidance_container = $(`<h3 class = "center">Verify your solution: </h3>
-    <div id = "hints"></div>`);
-    return guidance_container
-}
-
 //---- misc. ----
 
 // Get a (very simple) text representation of a permissions explanation
